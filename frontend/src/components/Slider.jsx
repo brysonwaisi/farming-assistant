@@ -1,16 +1,18 @@
 import { ArrowLeftOutlined, ArrowRightOutlined } from "@material-ui/icons";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { sliderItems } from "../data";
-import { mobile } from "../smallScreen";
+import { mobile, tablet } from "../smallScreen";
 
 const Container = styled.div`
   width: 100%;
-  height: 100vh;
+  height: 90vh;
   display: flex;
   position: relative;
   overflow: hidden;
-  ${mobile({ display: "none" })}
+  ${tablet({ height: "60vh" })}
+  ${mobile({ height: "55vh" })}
 `;
 
 const Arrow = styled.div`
@@ -41,7 +43,7 @@ const Wrapper = styled.div`
 
 const Slide = styled.div`
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   display: flex;
   align-items: center;
   background-color: #${(props) => props.bg};
@@ -54,15 +56,21 @@ const ImgContainer = styled.div`
 
 const Image = styled.img`
   height: 80%;
+  width: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
 `;
 
 const InfoContainer = styled.div`
   flex: 1;
   padding: 50px;
+  ${mobile({ padding: "20px" })}
 `;
 
 const Title = styled.h1`
   font-size: 70px;
+  ${tablet({ fontSize: "44px" })}
+  ${mobile({ fontSize: "30px" })}
 `;
 
 const Desc = styled.p`
@@ -70,6 +78,7 @@ const Desc = styled.p`
   font-size: 20px;
   font-weight: 500;
   letter-spacing: 3px;
+  ${mobile({ margin: "20px 0px", fontSize: "15px", letterSpacing: "1px" })}
 `;
 
 const Button = styled.button`
@@ -98,12 +107,17 @@ const Slider = () => {
         {sliderItems.map((item) => (
           <Slide bg={item.bg} key={item.id}>
             <ImgContainer>
-              <Image src={item.img} />
+              <Image src={item.img} alt={item.title} />
             </ImgContainer>
             <InfoContainer>
               <Title>{item.title}</Title>
               <Desc>{item.desc}</Desc>
-              <Button>SHOP NOW</Button>
+              <Link
+                to={item.cat ? `/products/${item.cat}` : "/products"}
+                style={{ textDecoration: "none" }}
+              >
+                <Button>SHOP NOW</Button>
+              </Link>
             </InfoContainer>
           </Slide>
         ))}

@@ -1,66 +1,18 @@
 const router = require('express').Router();
-const Cart = require('../models/Cart');
-const { verifyToken, verifyTokenAndAuthorization, verifyTokenAndAdmin } = require('../middleware/tokenVerify');
+const {
+  verifyToken,
+  verifyTokenAndAdmin,
+  checkOwnership,
+} = require('../middleware/tokenVerify');
+const asyncHandler = require('../util/asyncHandler');
+const ctrl = require('../controllers/cartController');
 
-// Create
-router.post('/', verifyToken, async (req, res) => {
-  const newCart = new Cart(req.body);
-
-  try {
-    const savedCart = await newCart.save();
-    res.status(200).json(savedCart);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// Update
-router.put('/:id', verifyTokenAndAuthorization, async (req, res) => {
-  try {
-    const updatedCart = await Cart.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: req.body,
-      },
-      { new: true },
-    );
-    res.status(200).json(updatedCart);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// Delete
-
-router.delete('/:id', verifyTokenAndAuthorization, async (req, res) => {
-  try {
-    await Cart.findByIdAndDelete(req.params.id);
-    res.status(200).json('Cart has been deleted...');
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// Get USER Cart
-
-router.get('/find/:userId', async (req, res) => {
-  try {
-    const cart = await Cart.findOne({ userId: req.params.userId });
-    res.status(200).json(cart);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// Get all CART
-
-router.get('/', verifyTokenAndAdmin, async (req, res) => {
-  try {
-    const carts = await Cart.find();
-    res.status(200).json(carts);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+router.post('/', verifyToken, asyncHandler(ctrl.create));
+router.put('/find/:userId', verifyToken, checkOwnership, asyncHandler(ctrl.upsertByUser));
+// :id is a cart document id — ownership is verified inside the controller/service.
+router.put('/:id', verifyToken, asyncHandler(ctrl.updateById));
+router.delete('/:id', verifyToken, asyncHandler(ctrl.removeById));
+router.get('/find/:userId', verifyToken, checkOwnership, asyncHandler(ctrl.getByUser));
+router.get('/', verifyTokenAndAdmin, asyncHandler(ctrl.getAll));
 
 module.exports = router;

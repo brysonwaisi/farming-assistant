@@ -1,10 +1,17 @@
 import {
+  Favorite,
   FavoriteBorderOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
 } from "@material-ui/icons";
-import { Link } from "react-router-dom";
-import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import styled, { css } from "styled-components";
+import { addProduct } from "../redux/cartRedux";
+import { useWishlistToggle } from "../hooks/useWishlistToggle";
+import { FALLBACK_IMG, onImgError } from "../constants/images";
+import { colors } from "../theme";
+import { mobile, tablet } from "../smallScreen";
 
 
 const Info = styled.div`
@@ -14,42 +21,63 @@ const Info = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.15);
   z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.5s ease;
+  transition: all 0.4s ease;
   cursor: pointer;
 `;
 
 const Container = styled.div`
-  flex: 1;
+  flex: 1 1 22%;
   margin: 5px;
-  min-width: 280px;
-  height: 350px;
+  min-width: 250px;
+  max-width: 24%;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5fbfd;
+  background-color: ${colors.lightBg};
   position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
 
   &:hover ${Info} {
     opacity: 1;
   }
+
+  ${tablet(css`
+    flex: 1 1 30%;
+    max-width: 31%;
+  `)}
+  ${mobile(css`
+    flex: 1 1 45%;
+    min-width: 45%;
+    max-width: 47%;
+  `)}
 `;
 
 const Circle = styled.div`
-  width: 200px;
-  height: 200px;
+  width: 70%;
+  height: 70%;
   border-radius: 50%;
-  background-color: white;
+  background-color: ${colors.white};
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 `;
 
 const Image = styled.img`
+  width: 75%;
   height: 75%;
+  object-fit: contain;
   z-index: 2;
+  mix-blend-mode: multiply;
 `;
 
 const Icon = styled.div`
@@ -61,6 +89,7 @@ const Icon = styled.div`
   align-items: center;
   justify-content: center;
   margin: 10px;
+  cursor: pointer;
   transition: all 0.5s ease;
 
   &:hover {
@@ -70,27 +99,60 @@ const Icon = styled.div`
 `;
 
 const Product = ({ item }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { toggle, isWished } = useWishlistToggle();
+  const wished = isWished(item?._id);
 
   if (!item) {
     return <div>No item available</div>;
   }
 
+  const openProduct = () => navigate(`/product/${item._id}`);
+
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    dispatch(
+      addProduct({ ...item, quantity: 1, type: item.type?.[0] || "" })
+    );
+  };
+
+  const handleWishlist = (e) => {
+    e.stopPropagation();
+    toggle(item);
+  };
+
   return (
-    <Container>
+    <Container onClick={openProduct}>
       <Circle>
-        <Image src={item.img} />
+        <Image
+          src={item.img || FALLBACK_IMG}
+          alt={item.title}
+          onError={onImgError}
+        />
       </Circle>
       <Info>
-        <Icon>
+        <Icon onClick={handleAddToCart} title="Add to cart">
           <ShoppingCartOutlined />
         </Icon>
-        <Icon>
-          <Link to={`/product/${item._id}`}>
-            <SearchOutlined />
-          </Link>
+        <Icon
+          onClick={(e) => {
+            e.stopPropagation();
+            openProduct();
+          }}
+          title="View product"
+        >
+          <SearchOutlined />
         </Icon>
-        <Icon>
-          <FavoriteBorderOutlined />
+        <Icon
+          onClick={handleWishlist}
+          title={wished ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          {wished ? (
+            <Favorite style={{ color: "#d32f2f" }} />
+          ) : (
+            <FavoriteBorderOutlined />
+          )}
         </Icon>
       </Info>
     </Container>

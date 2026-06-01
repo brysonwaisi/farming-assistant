@@ -1,9 +1,9 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { mobile } from "../smallScreen";
+import { mobile, tablet } from "../smallScreen";
 import { useDispatch } from "react-redux";
 import { signup } from "../redux/apiCalls";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from 'framer-motion'
 import backgroundImage from '../assets/home.svg'
 
@@ -26,7 +26,8 @@ const Wrapper = styled.div`
   padding: 20px;
   border-radius: 20px;
   background-color: beige;
-  ${mobile({ width: "75%" })}
+  ${tablet({ width: "65%" })}
+  ${mobile({ width: "85%" })}
 `;
 
 const Title = styled.h1`
@@ -63,6 +64,22 @@ const Button = styled.button`
   cursor: pointer;
   font-size: 18px;
   border-radius: 10px;
+  &:hover {
+    background-color: #00695c;
+  }
+`;
+
+const StyledLink = styled(Link)`
+  margin-top: 14px;
+  font-size: 15px;
+  color: teal;
+  text-decoration: none;
+  font-weight: 500;
+  width: fit-content;
+  &:hover {
+    text-decoration: underline;
+    color: #00695c;
+  }
 `;
 
 const Register = () => {
@@ -101,33 +118,43 @@ const Register = () => {
       <Wrapper>
         <Title>CREATE AN ACCOUNT</Title>
         <Form onSubmit={handleSubmit}>
-          <Input name="name" placeholder="first name" onChange={handleChange} />
+          <Input
+            name="name"
+            placeholder="first name"
+            autoComplete="given-name"
+            onChange={handleChange}
+          />
           <Input
             name="lastName"
             placeholder="last name"
+            autoComplete="family-name"
             onChange={handleChange}
           />
           <Input
             name="username"
             placeholder="username"
+            autoComplete="username"
             onChange={handleChange}
           />
           <Input
             name="email"
             placeholder="email"
             type="email"
+            autoComplete="email"
             onChange={handleChange}
           />
           <Input
             name="password"
             placeholder="password"
             type="password"
+            autoComplete="new-password"
             onChange={handleChange}
           />
           <Input
             name="confirmPassword"
             placeholder="confirm password"
             type="password"
+            autoComplete="new-password"
             onChange={handleChange}
           />
           <Agreement>
@@ -135,6 +162,7 @@ const Register = () => {
             data in accordance with the <b>PRIVACY POLICY</b>
           </Agreement>
           <Button type="submit">CREATE</Button>
+          <StyledLink to="/login">Already have an account? Sign in</StyledLink>
         </Form>
       </Wrapper>
     </Container>

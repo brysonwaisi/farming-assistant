@@ -1,6 +1,22 @@
+import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/userRedux";
 import { useNavigate } from "react-router-dom";
+import { pubRequest } from "../reqMethods";
+import Button from "../components/Button";
+
+const Container = styled.div`
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+`;
+
+const Title = styled.h2`
+  font-weight: 300;
+`;
 
 const Logout = () => {
   const dispatch = useDispatch();
@@ -8,20 +24,28 @@ const Logout = () => {
 
   const { isLoggedIn } = useSelector((state) => state.user);
 
-  const handleLogout = (e) => {
+  const handleLogout = async (e) => {
     e.preventDefault();
 
+    try {
+      await pubRequest.post("/auth/logout");
+    } catch (err) {
+      // Ignore network errors; still clear local session below.
+    }
     dispatch(logout());
     localStorage.removeItem("persist:root");
-    const local = localStorage.removeItem("accessToken");
     navigate("/login");
   };
 
   return (
-    <>
-      if(isLoggedIn)
-      {<button onClick={handleLogout}>Logout</button>}
-    </>
+    <Container>
+      {isLoggedIn && (
+        <>
+          <Title>Ready to leave?</Title>
+          <Button onClick={handleLogout}>Logout</Button>
+        </>
+      )}
+    </Container>
   );
 };
 

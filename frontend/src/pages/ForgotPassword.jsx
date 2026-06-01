@@ -1,10 +1,23 @@
 import styled from "styled-components";
-import { mobile } from "../smallScreen";
+import { mobile, tablet } from "../smallScreen";
 import { useDispatch, useSelector } from "react-redux";
 import { forgotpassword } from "../redux/apiCalls";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import backgroundImage from "../assets/home.svg";
+
+const StyledLink = styled(Link)`
+  margin-top: 14px;
+  font-size: 15px;
+  color: teal;
+  text-decoration: none;
+  font-weight: 500;
+  &:hover {
+    text-decoration: underline;
+    color: #00695c;
+  }
+`;
 
 const Container = styled(motion.div)`
   width: 100vw;
@@ -25,7 +38,8 @@ const Wrapper = styled.div`
   padding: 20px;
   border-radius: 20px;
   background-color: beige;
-  ${mobile({ width: "75%" })}
+  ${tablet({ width: "55%" })}
+  ${mobile({ width: "85%" })}
 `;
 
 const Title = styled.h1`
@@ -128,6 +142,8 @@ const ForgotPassword = () => {
           </Description>
           <Input
             type="email"
+            name="email"
+            autoComplete="email"
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -146,6 +162,7 @@ const ForgotPassword = () => {
           <Button type="submit" disabled={isFetching}>
             {isFetching ? "Sending..." : "Send Reset Link"}
           </Button>
+          <StyledLink to="/login">Back to sign in</StyledLink>
         </Form>
       </Wrapper>
     </Container>

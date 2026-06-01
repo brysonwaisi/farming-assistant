@@ -1,19 +1,11 @@
 const router = require('express').Router();
-const NewsletterSubscription = require('../models/Newsletter');
-const logger = require('../services/logger');
+const { body } = require('express-validator');
+const validate = require('../middleware/validate');
+const asyncHandler = require('../util/asyncHandler');
+const ctrl = require('../controllers/newsletterController');
 
-router.post('/', async (req, res) => {
-  try {
-    const { email } = req.body;
+const rules = [body('email').trim().isEmail().withMessage('A valid email is required')];
 
-    const newSubscription = new NewsletterSubscription({ email });
-    await newSubscription.save();
-
-    res.status(201).json({ message: 'Subscription successful' });
-  } catch (error) {
-    logger.error('Subscription failed:', error);
-    res.status(500).json({ message: 'Subscription failed' });
-  }
-});
+router.post('/', rules, validate, asyncHandler(ctrl.subscribe));
 
 module.exports = router;

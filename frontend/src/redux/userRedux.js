@@ -7,13 +7,16 @@ const userSlice = createSlice({
     isFetching: false,
     error: false,
     isLoggedIn: false,
+    passwordFlowSuccess: false,
   },
   reducers: {
     loginStart: (state) => {
       state.isFetching = true;
+      state.error = false;
     },
     loginSuccess: (state, action) => {
       state.isFetching = false;
+      state.error = false;
       state.currentUser = action.payload;
       state.isLoggedIn = true;
     },
@@ -24,11 +27,13 @@ const userSlice = createSlice({
     },
     signupStart: (state) => {
       state.isFetching = true;
+      state.error = false;
     },
     signupSuccess: (state, action) => {
       state.isFetching = false;
+      state.error = false;
       state.currentUser = action.payload;
-      state.isLoggedIn = false;
+      state.isLoggedIn = true;
     },
     signupFailure: (state) => {
       state.isFetching = false;
@@ -37,33 +42,43 @@ const userSlice = createSlice({
     },
     forgotpasswordStart: (state) => {
       state.isFetching = true;
+      state.error = false;
+      state.passwordFlowSuccess = false;
     },
-    forgotpasswordSuccess: (state, action) => {
+    // forgot/reset responses are {success, message} — never write to currentUser.
+    forgotpasswordSuccess: (state) => {
       state.isFetching = false;
-      state.currentUser = action.payload;
-      state.isLoggedIn = false;
+      state.passwordFlowSuccess = true;
     },
     forgotpasswordFailure: (state) => {
       state.isFetching = false;
       state.error = true;
-      state.isLoggedIn = false;
     },
     resetpasswordStart: (state) => {
       state.isFetching = true;
+      state.error = false;
+      state.passwordFlowSuccess = false;
     },
-    resetpasswordSuccess: (state, action) => {
+    resetpasswordSuccess: (state) => {
       state.isFetching = false;
-      state.currentUser = action.payload;
-      state.isLoggedIn = false;
+      state.passwordFlowSuccess = true;
     },
     resetpasswordFailure: (state) => {
       state.isFetching = false;
       state.error = true;
-      state.isLoggedIn = false;
+    },
+    // Merge updated profile fields into the current user (after a profile edit).
+    updateUser: (state, action) => {
+      if (state.currentUser) {
+        state.currentUser = { ...state.currentUser, ...action.payload };
+      }
     },
     logout: (state) => {
       state.currentUser = null;
       state.isLoggedIn = false;
+      state.isFetching = false;
+      state.error = false;
+      state.passwordFlowSuccess = false;
     },
   },
 });
@@ -81,6 +96,7 @@ export const {
   resetpasswordStart,
   resetpasswordSuccess,
   resetpasswordFailure,
+  updateUser,
   logout,
 } = userSlice.actions;
 export default userSlice.reducer;

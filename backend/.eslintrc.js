@@ -14,4 +14,14 @@ module.exports = {
     'no-underscore-dangle': 'off',
     camelcase: 'off',
   },
+  overrides: [
+    {
+      files: ['tests/**/*.js', '**/*.test.js'],
+      env: { jest: true },
+      rules: {
+        'no-restricted-syntax': 'off',
+        'no-await-in-loop': 'off',
+      },
+    },
+  ],
 };

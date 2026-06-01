@@ -1,16 +1,16 @@
-import { Add, Remove } from "@material-ui/icons";
-import { useSelector } from "react-redux";
+import { Add, Remove, DeleteOutline } from "@material-ui/icons";
+import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components";
 import Welcome from "../components/Welcome";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { mobile } from "../smallScreen";
-import StripeCheckout from "react-stripe-checkout";
 import { useEffect, useState } from "react";
-import { userRequest } from "../reqMethods";
-import { useHistory } from "react-router";
-
-const KEY = import.meta.env.VITE_PUBLISHABLE_KEY;
+import { useNavigate } from "react-router-dom";
+import { updateQuantity, removeProduct } from "../redux/cartRedux";
+import { syncCart } from "../redux/apiCalls";
+import CheckoutModal from "../components/CheckoutModal";
+import { colors } from "../theme";
 
 const Container = styled.div``;
 
@@ -71,8 +71,23 @@ const ProductDetail = styled.div`
   display: flex;
 `;
 
-const Image = styled.img`
+const ImageWrap = styled.div`
   width: 200px;
+  height: 200px;
+  min-width: 200px;
+  border-radius: 50%;
+  background-color: ${colors.white};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const Image = styled.img`
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
 `;
 
 const Details = styled.div`
@@ -84,7 +99,14 @@ const Details = styled.div`
 
 const ProductName = styled.span``;
 
-const ProductId = styled.span``;
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 40px 20px;
+  font-size: 18px;
+`;
+
 
 const ProductColor = styled.div`
   width: 20px;
@@ -94,6 +116,21 @@ const ProductColor = styled.div`
 `;
 
 const ProductSize = styled.span``;
+
+const RemoveButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border: 1px solid #d32f2f;
+  color: #d32f2f;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  width: fit-content;
+`;
 
 const PriceDetail = styled.div`
   flex: 1;
@@ -132,7 +169,8 @@ const Summary = styled.div`
   border: 0.5px solid lightgray;
   border-radius: 10px;
   padding: 20px;
-  height: 50vh;
+  min-height: 50vh;
+  height: fit-content;
 `;
 
 const SummaryTitle = styled.h1`
@@ -157,32 +195,60 @@ const Button = styled.button`
   background-color: black;
   color: white;
   font-weight: 600;
+  cursor: pointer;
+  &:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+  }
 `;
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart);
-  const [stripeToken, setStripeToken] = useState(null);
-  const history = useHistory();
-
-  const onToken = (token) => {
-    setStripeToken(token);
-  };
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const wishlistCount = useSelector((state) => state.wishlist.products.length);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
   useEffect(() => {
-    const makeRequest = async () => {
-      try {
-        const res = await userRequest.post("/checkout/payment", {
-          tokenId: stripeToken.id,
-          amount: 500,
-        });
-        history.push("/success", {
-          stripeData: res.data,
-          products: cart,
-        });
-      } catch {}
-    };
-    stripeToken && makeRequest();
-  }, [stripeToken, cart.total, history]);
+    if (currentUser?._id) {
+      syncCart(currentUser._id, cart.products);
+    }
+  }, [cart.products, currentUser]);
+
+  const handleQuantity = (product, delta) => {
+    const nextQty = product.quantity + delta;
+    // Decrementing the last unit removes the line from the cart.
+    if (nextQty <= 0) {
+      dispatch(removeProduct({ _id: product._id, type: product.type }));
+      return;
+    }
+    dispatch(
+      updateQuantity({
+        _id: product._id,
+        type: product.type,
+        quantity: nextQty,
+      })
+    );
+  };
+
+  const handleRemove = (product) => {
+    dispatch(removeProduct({ _id: product._id, type: product.type }));
+  };
+
+  const handleCheckout = () => {
+    if (!cart.products.length) return;
+    // Guests can build a cart, but checkout needs an account — ask them to sign
+    // in and bring them right back to the cart.
+    if (!currentUser) {
+      navigate("/login?redirect=/cart");
+      return;
+    }
+    setCheckoutError("");
+    setShowCheckout(true);
+  };
+
   return (
     <Container>
       <Navbar />
@@ -190,80 +256,112 @@ const Cart = () => {
       <Wrapper>
         <Title>YOUR BAG</Title>
         <Top>
-          <TopButton>CONTINUE SHOPPING</TopButton>
+          <TopButton onClick={() => navigate("/products")}>
+            CONTINUE SHOPPING
+          </TopButton>
           <TopTexts>
-            <TopText>Shopping Bag</TopText>
-            <TopText>Your Wishlist (0)</TopText>
+            <TopText onClick={() => navigate("/cart")}>
+              Shopping Bag ({cart.quantity})
+            </TopText>
+            <TopText onClick={() => navigate("/wishlist")}>
+              Your Wishlist ({wishlistCount})
+            </TopText>
           </TopTexts>
-          <TopButton type="filled">CHECKOUT NOW</TopButton>
+          <TopButton type="filled" onClick={handleCheckout} disabled={cart.products.length === 0}>
+            CHECKOUT NOW
+          </TopButton>
         </Top>
         <Bottom>
           <Info>
             {cart.products.map((product) => (
-              <Product>
+              <Product key={`${product._id}-${product.type || ""}`}>
                 <ProductDetail>
-                  <Image src={product.img} />
+                  <ImageWrap>
+                    <Image src={product.img} alt={product.title} />
+                  </ImageWrap>
                   <Details>
                     <ProductName>
                       <b>Product:</b> {product.title}
                     </ProductName>
-                    <ProductId>
-                      <b>ID:</b> {product._id}
-                    </ProductId>
-                    <ProductColor color={product.color} />
-                    <ProductSize>
-                      <b>Size:</b> {product.size}
-                    </ProductSize>
+                    {product.type && (
+                      <ProductSize>
+                        <b>Type:</b> {product.type}
+                      </ProductSize>
+                    )}
+                    <RemoveButton onClick={() => handleRemove(product)}>
+                      <DeleteOutline fontSize="small" /> Remove
+                    </RemoveButton>
                   </Details>
                 </ProductDetail>
                 <PriceDetail>
                   <ProductAmountContainer>
-                    <Add />
+                    <Add
+                      role="button"
+                      aria-label="Increase quantity"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleQuantity(product, 1)}
+                    />
                     <ProductAmount>{product.quantity}</ProductAmount>
-                    <Remove />
+                    <Remove
+                      role="button"
+                      aria-label="Decrease quantity"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleQuantity(product, -1)}
+                    />
                   </ProductAmountContainer>
                   <ProductPrice>
-                    $ {product.price * product.quantity}
+                    KES {product.price * product.quantity}
                   </ProductPrice>
                 </PriceDetail>
               </Product>
             ))}
+            {cart.products.length === 0 && (
+              <EmptyState>
+                <ProductName>Your cart is empty.</ProductName>
+                <TopText onClick={() => navigate("/products")}>
+                  Browse all products
+                </TopText>
+              </EmptyState>
+            )}
             <Hr />
           </Info>
           <Summary>
             <SummaryTitle>ORDER SUMMARY</SummaryTitle>
             <SummaryItem>
               <SummaryItemText>Subtotal</SummaryItemText>
-              <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
+              <SummaryItemPrice>KES {cart.total}</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
               <SummaryItemText>Estimated Shipping</SummaryItemText>
-              <SummaryItemPrice>$ 5.90</SummaryItemPrice>
+              <SummaryItemPrice>KES 250</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
               <SummaryItemText>Shipping Discount</SummaryItemText>
-              <SummaryItemPrice>$ -5.90</SummaryItemPrice>
+              <SummaryItemPrice>KES -250</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem type="total">
               <SummaryItemText>Total</SummaryItemText>
-              <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
+              <SummaryItemPrice>KES {cart.total}</SummaryItemPrice>
             </SummaryItem>
-            <StripeCheckout
-              name="Farming Assistant Shop"
-              image="https://github.com/brysonwaisi/farming-assistant/blob/master/frontend/src/assets/hometxt.png?raw=true"
-              billingAddress
-              shippingAddress
-              description={`Your total is $${cart.total}`}
-              amount={cart.total * 100}
-              token={onToken}
-              stripeKey={KEY}
+            <Button
+              onClick={handleCheckout}
+              disabled={cart.products.length === 0}
             >
-              <Button>CHECKOUT NOW</Button>
-            </StripeCheckout>
+              CHECKOUT NOW
+            </Button>
+            {checkoutError && (
+              <p style={{ color: "#d32f2f", marginTop: 10 }}>{checkoutError}</p>
+            )}
           </Summary>
         </Bottom>
       </Wrapper>
       <Footer />
+      {showCheckout && (
+        <CheckoutModal
+          products={cart.products}
+          onClose={() => setShowCheckout(false)}
+        />
+      )}
     </Container>
   );
 };

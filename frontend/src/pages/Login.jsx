@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import { mobile } from "../smallScreen";
+import { mobile, tablet } from "../smallScreen";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../redux/apiCalls";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import backgroundImage from "../assets/home.svg";
 
@@ -26,7 +26,8 @@ const Wrapper = styled.div`
   padding: 20px;
   border-radius: 20px;
   background-color: beige;
-  ${mobile({ width: "75%" })}
+  ${tablet({ width: "55%" })}
+  ${mobile({ width: "85%" })}
 `;
 
 const Title = styled.h1`
@@ -68,22 +69,47 @@ const Error = styled.span`
   color: red;
 `;
 
+const LinkRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+`;
+
 const StyledLink = styled(Link)`
-  margin: 5px 0px;
-  font-size: 18px;
-  text-decoration: underline;
-  cursor: pointer;
+  font-size: 15px;
+  color: teal;
+  text-decoration: none;
+  font-weight: 500;
+  width: fit-content;
+  &:hover {
+    text-decoration: underline;
+    color: #00695c;
+  }
 `;
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  const { isFetching, error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { isFetching, error, isLoggedIn } = useSelector((state) => state.user);
 
-  const handleClick = (e) => {
+  // After a successful login, go where the user was headed (e.g. /cart). Only
+  // honor internal absolute paths ("/cart") — never an external URL or
+  // protocol-relative ("//evil.com") — to avoid an open-redirect.
+  useEffect(() => {
+    if (isLoggedIn) {
+      const requested = searchParams.get("redirect") || "/";
+      const safe = /^\/(?!\/)/.test(requested) ? requested : "/";
+      navigate(safe);
+    }
+  }, [isLoggedIn, navigate, searchParams]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    login(dispatch, { username, password });
+    dispatch(login({ username, password }));
   };
 
   return (
@@ -94,22 +120,32 @@ const Login = () => {
     >
       <Wrapper>
         <Title>SIGN IN</Title>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <Input
+            name="username"
+            autoComplete="username"
             placeholder="username"
+            aria-label="Username"
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <Input
             type="password"
+            name="password"
+            autoComplete="current-password"
             placeholder="password"
+            aria-label="Password"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button onClick={handleClick} disabled={isFetching}>
+          <Button type="submit" disabled={isFetching}>
             LOGIN
           </Button>
           {error && <Error>Check your details again...</Error>}
-          <StyledLink to="/forgot-password">FORGOT PASSWORD?</StyledLink>{" "}
-          <StyledLink to="/register">CREATE A NEW ACCOUNT</StyledLink>{" "}
+          <LinkRow>
+            <StyledLink to="/forgot-password">Forgot password?</StyledLink>
+            <StyledLink to="/register">Create a new account</StyledLink>
+          </LinkRow>
         </Form>
       </Wrapper>
     </Container>

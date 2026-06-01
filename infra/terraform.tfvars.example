@@ -1,0 +1,4 @@
+region          = "us-east-1"
+project          = "farming-assistant"
+env              = "prod"
+allowed_origins  = ["http://localhost:5173", "https://your-frontend-domain.com"]

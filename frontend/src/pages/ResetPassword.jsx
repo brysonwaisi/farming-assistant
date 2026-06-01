@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import { mobile } from "../smallScreen";
+import { mobile, tablet } from "../smallScreen";
 import { useDispatch, useSelector } from "react-redux";
 import { resetpassword } from "../redux/apiCalls";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import backgroundImage from "../assets/home.svg";
 
@@ -26,7 +26,8 @@ const Wrapper = styled.div`
   padding: 20px;
   border-radius: 20px;
   background-color: beige;
-  ${mobile({ width: "75%" })}
+  ${tablet({ width: "55%" })}
+  ${mobile({ width: "85%" })}
 `;
 
 const Title = styled.h1`
@@ -64,32 +65,44 @@ const Button = styled.button`
   border-radius: 10px;
 `;
 
-const ResetPassword = () => { //TODO
+const StyledLink = styled(Link)`
+  font-size: 15px;
+  color: teal;
+  text-decoration: none;
+  font-weight: 500;
+  &:hover {
+    text-decoration: underline;
+    color: #00695c;
+  }
+`;
+
+const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
-  const[confirmNewPassword, setConfirmNewPassword] = useState("");
-  // const [isSubmitted, setIsSubmitted] = useState(false);
-  const { isFetching, error } = useSelector((state) => state.user);
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const { isFetching, error, passwordFlowSuccess } = useSelector(
+    (state) => state.user
+  );
   const dispatch = useDispatch();
 
-  const {token} = useParams();
+  const { token } = useParams();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => { 
-    
+  // Redirect to login after a successful reset; cleaned up on unmount.
+  useEffect(() => {
+    if (passwordFlowSuccess) {
+      const timer = setTimeout(() => navigate("/login"), 4000);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [passwordFlowSuccess, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (newPassword !== confirmNewPassword) {
       alert("Passwords do not match");
       return;
     }
-
-    e.preventDefault();
-    await dispatch(resetpassword( token, newPassword));
-
-    setTimeout(() => {
-      navigate("/login");
-    }, 5000);
-
-    // setIsSubmitted(true);
-
+    dispatch(resetpassword({ token, password: newPassword }));
   };
   return (
     <Container
@@ -99,9 +112,11 @@ const ResetPassword = () => { //TODO
     >
       <Wrapper>
         <Title>Reset Password</Title>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <Input
             type="password"
+            name="password"
+            autoComplete="new-password"
             placeholder="New Password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
@@ -109,15 +124,18 @@ const ResetPassword = () => { //TODO
           />
           <Input
             type="password"
+            name="confirmPassword"
+            autoComplete="new-password"
             placeholder="confirm password"
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
             required
           />
-          
-          <Button onClick={handleSubmit} disabled={isFetching}>
+
+          <Button type="submit" disabled={isFetching}>
             Continue
           </Button>
+          <StyledLink to="/login">Back to sign in</StyledLink>
         </Form>
       </Wrapper>
     </Container>

@@ -1,49 +1,23 @@
-const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors');
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
 const http = require('http');
 const connectDB = require('./db/config');
-const userRoute = require('./routes/user');
-const authRoute = require('./routes/auth');
-const productRoute = require('./routes/product');
-const cartRoute = require('./routes/cart');
-const orderRoute = require('./routes/order');
-const stripeRoute = require('./routes/stripe');
-const newsletterRoute = require('./routes/newsletter');
 const logger = require('./services/logger');
 
 dotenv.config();
 
-const app = express();
-
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the Farming Assistant Backend API.' });
-});
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-app.use(cors());
-app.use(express.json());
-app.use(morgan('tiny', { stream: logger.stream }));
-
-app.use('/api/auth', authRoute);
-app.use('/api/users', userRoute);
-app.use('/api/products', productRoute);
-app.use('/api/carts', cartRoute);
-app.use('/api/orders', orderRoute);
-app.use('/api/checkout', stripeRoute);
-app.use('/api/subscribe', newsletterRoute);
+const app = require('./app');
 
 const server = http.createServer(app);
 
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', reason);
+});
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught exception', err);
+});
+
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
-
   if (Number.isNaN(port)) {
     return val;
   }

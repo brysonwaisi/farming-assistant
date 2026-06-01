@@ -8,6 +8,8 @@ import {
   Twitter,
 } from "@material-ui/icons";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { mobile } from "../smallScreen";
 
 const Container = styled.div`
@@ -62,9 +64,15 @@ const List = styled.ul`
   flex-wrap: wrap;
 `;
 
-const ListItem = styled.li`
+const ListItem = styled(Link)`
   width: 50%;
   margin-bottom: 10px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const Right = styled.div`
@@ -81,9 +89,16 @@ const ContactItem = styled.div`
 
 const Payment = styled.img`
   width: 50%;
+  height: auto;
+  object-fit: contain;
 `;
 
 const Footer = () => {
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  // Account-bound links go to the user's own pages when signed in, else to login.
+  const account = isLoggedIn ? "/account" : "/login";
+  const wishlist = isLoggedIn ? "/wishlist" : "/login";
+
   return (
     <Container>
       <Left>
@@ -113,15 +128,15 @@ const Footer = () => {
       <Center>
         <Title>Useful Links</Title>
         <List>
-          <ListItem>Home</ListItem>
-          <ListItem>Cart</ListItem>
-          <ListItem>Vegetables</ListItem>
-          <ListItem>Fruits</ListItem>
-          <ListItem>Cereals</ListItem>
-          <ListItem>My Account</ListItem>
-          <ListItem>Order Tracking</ListItem>
-          <ListItem>Wishlist</ListItem>
-          <ListItem>Terms</ListItem>
+          <ListItem to="/">Home</ListItem>
+          <ListItem to="/cart">Cart</ListItem>
+          <ListItem to="/products/veggies">Vegetables</ListItem>
+          <ListItem to="/products/fruits">Fruits</ListItem>
+          <ListItem to="/products/cereals">Cereals</ListItem>
+          <ListItem to={account}>My Account</ListItem>
+          <ListItem to={account}>Order Tracking</ListItem>
+          <ListItem to={wishlist}>Wishlist</ListItem>
+          <ListItem to="/">Terms</ListItem>
         </List>
       </Center>
       <Right>
@@ -137,7 +152,7 @@ const Footer = () => {
           <MailOutline style={{ marginRight: "10px" }} />{" "}
           contact@farmingassistant.com
         </ContactItem>
-        <Payment src="https://i.ibb.co/Qfvn4z6/payment.png" />
+        <Payment src="https://i.ibb.co/Qfvn4z6/payment.png" alt="Accepted payment methods" />
       </Right>
     </Container>
   );

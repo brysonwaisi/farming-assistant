@@ -1,10 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Badge } from '@material-ui/core';
-import { Search, ShoppingCartOutlined } from '@material-ui/icons';
+import { Search, ShoppingCartOutlined, FavoriteBorderOutlined } from '@material-ui/icons';
 import { mobile } from '../smallScreen';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Container = styled.div`
   height: 60px;
@@ -72,8 +73,15 @@ const MenuItem = styled.div`
 
 const Navbar = () => {
   const quantity = useSelector((state) => state.cart.quantity);
+  const wishlistCount = useSelector((state) => state.wishlist.products.length);
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
 
+  const handleSearch = () => {
+    const q = query.trim();
+    if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
+  };
 
   return (
     <Container>
@@ -81,8 +89,17 @@ const Navbar = () => {
         <Left>
           <Language>EN</Language>
           <SearchContainer>
-            <Input placeholder="Search" />
-            <Search style={{ color: "gray", fontSize: 16 }} />
+            <Input
+              placeholder="Search"
+              aria-label="Search products"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <Search
+              style={{ color: "gray", fontSize: 16, cursor: "pointer" }}
+              onClick={handleSearch}
+            />
           </SearchContainer>
         </Left>
         <Center>
@@ -103,23 +120,39 @@ const Navbar = () => {
           )}
           {isLoggedIn && (
             <>
+              <Link to="/account" style={{ textDecoration: "none" }}>
+                <MenuItem>ACCOUNT</MenuItem>
+              </Link>
               <Link to="/logout" style={{ textDecoration: "none" }}>
                 <MenuItem>LOGOUT</MenuItem>
               </Link>
 
-              <Link to="/cart">
+              <Link to="/wishlist">
                 <MenuItem>
                   <Badge
-                    badgeContent={quantity}
+                    badgeContent={wishlistCount}
                     color="primary"
                     overlap="rectangular"
                   >
-                    <ShoppingCartOutlined />
+                    <FavoriteBorderOutlined />
                   </Badge>
                 </MenuItem>
               </Link>
             </>
           )}
+
+          {/* Cart is available to everyone — guests can shop, login is asked at checkout. */}
+          <Link to="/cart">
+            <MenuItem>
+              <Badge
+                badgeContent={quantity}
+                color="primary"
+                overlap="rectangular"
+              >
+                <ShoppingCartOutlined />
+              </Badge>
+            </MenuItem>
+          </Link>
         </Right>
       </Wrapper>
     </Container>

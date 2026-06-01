@@ -59,18 +59,17 @@ const Newsletter = () => {
 
   const { isLoading, success, error } = useSelector((state) => state.sub);
   const handleSubscription = async () => {
+    if (!email.trim()) {
+      setEmailerror("Email is required");
+      return;
+    }
     if (!validateEmail(email)) {
       setEmailerror("Please enter a valid email");
       return;
     }
-    if (!email.trim()) {
-      
-      setEmailerror("Email is required"); 
-      return;
-    }
-    dispatch(subscriptions({email}));
-    setEmail("");
     setEmailerror("");
+    dispatch(subscriptions({ email }));
+    setEmail("");
   };
 
   return (
@@ -89,8 +88,9 @@ const Newsletter = () => {
         </Button>
       </InputContainer>
       {isLoading && <p>Loading...</p>}
-      {success && <p>Subscription successful!</p>}
-      {emailerror && <p>Subscription failed. Please try again.</p>}
+      {emailerror && <p>{emailerror}</p>}
+      {!emailerror && error && <p>Subscription failed. Please try again.</p>}
+      {!emailerror && !error && success && <p>Subscription successful!</p>}
     </Container>
   );
 };

@@ -1,21 +1,10 @@
 const router = require('express').Router();
-const stripe = require('stripe')(process.env.STRIPE_KEY);
+const { verifyToken } = require('../middleware/tokenVerify');
+const asyncHandler = require('../util/asyncHandler');
+const ctrl = require('../controllers/stripeController');
 
-router.post('/payment', (req, res) => {
-  stripe.charges.create(
-    {
-      source: req.body.tokenId,
-      amount: req.body.amount,
-      currency: 'usd',
-    },
-    (stripeErr, stripeRes) => {
-      if (stripeErr) {
-        res.status(500).json(stripeErr);
-      } else {
-        res.status(200).json(stripeRes);
-      }
-    },
-  );
-});
+router.post('/create-embedded-session', verifyToken, asyncHandler(ctrl.createEmbeddedSession));
+router.post('/create-checkout-session', verifyToken, asyncHandler(ctrl.createCheckoutSession));
+router.get('/session/:id', verifyToken, asyncHandler(ctrl.getSession));
 
 module.exports = router;

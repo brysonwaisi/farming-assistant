@@ -1,0 +1,7 @@
+# Terraform state contains secrets (IAM keys) — never commit it.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
