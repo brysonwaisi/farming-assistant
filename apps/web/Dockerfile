@@ -10,6 +10,7 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
+COPY packages/typescript-config/package.json packages/typescript-config/package.json
 RUN --mount=type=cache,target=/root/.npm npm install --workspaces --include-workspace-root --no-audit --fund=false
 COPY . .
 EXPOSE 5173
@@ -21,7 +22,9 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
+COPY packages/typescript-config/package.json packages/typescript-config/package.json
 RUN --mount=type=cache,target=/root/.npm npm install --workspaces --include-workspace-root --no-audit --fund=false
+COPY packages/typescript-config ./packages/typescript-config
 COPY apps/web ./apps/web
 RUN npm run build -w apps/web
 
