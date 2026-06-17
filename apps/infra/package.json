@@ -1,0 +1,14 @@
+{
+  "name": "infra",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Infrastructure: EKS 3-tier (Terraform), K8s manifests, and monitoring stack.",
+  "scripts": {
+    "build": "echo \"no build step for infra\"",
+    "lint": "echo \"infra lint: run 'terraform fmt -check' / 'kubeval' manually\"",
+    "tf:fmt": "terraform -chdir=infrastructure fmt -recursive",
+    "tf:validate": "terraform -chdir=infrastructure validate",
+    "s3:plan": "terraform -chdir=s3-cloudfront plan",
+    "s3:apply": "terraform -chdir=s3-cloudfront apply"
+  }
+}

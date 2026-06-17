@@ -1,0 +1,55 @@
+# Baseline network segmentation for the app namespace (default).
+# Requires a CNI that enforces NetworkPolicy (Calico/Cilium).
+---
+# Deny all ingress by default; explicit policies below re-open what's needed.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: default
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+# Allow the ingress-nginx controller to reach the backend on 5000.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-backend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: farmassist
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 5000
+---
+# Allow the ingress-nginx controller to reach the frontend on 80.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: farmassist-web
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 80

@@ -1,5 +1,9 @@
 mongodb
 node_modules
+
+# Turbo
+.turbo
+
 # logs
 log
 

@@ -1,16 +1,17 @@
 {
-  "name": "backend",
+  "name": "api",
   "version": "1.0.0",
   "description": "Farming Assistant Backend",
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=production node index.js",
     "dev": "NODE_ENV=development nodemon index.js",
+    "build": "echo \"no build step for api\"",
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:coverage": "cross-env NODE_ENV=test jest --runInBand --coverage",
     "migrate:images": "node scripts/migrateImages.js",
-    "eslint": "eslint ./",
-    "eslint-fix": "eslint ./ --fix"
+    "lint": "eslint ./",
+    "lint:fix": "eslint ./ --fix"
   },
   "jest": {
     "testEnvironment": "node",

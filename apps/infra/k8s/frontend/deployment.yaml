@@ -1,0 +1,86 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: farmassist-frontend
+automountServiceAccountToken: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: farmassist-web
+  labels:
+    app: farmassist-web
+    app.kubernetes.io/name: farming-assistant
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/managed-by: kubectl
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  replicas: 3
+  selector:
+    matchLabels:
+      app: farmassist-web
+  template:
+    metadata:
+      labels:
+        app: farmassist-web
+        app.kubernetes.io/name: farming-assistant
+        app.kubernetes.io/component: frontend
+    spec:
+      serviceAccountName: farmassist-frontend
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: farmassist-web
+              topologyKey: kubernetes.io/hostname
+      imagePullSecrets:
+      - name: my-registry-key
+      containers:
+      - name: nginx
+        image: docker.io/nyamwange/frontend:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 80
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 50m
+          limits:
+            memory: 256Mi
+            cpu: 300m
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/sbin/nginx", "-s", "quit"]
