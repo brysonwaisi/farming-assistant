@@ -115,14 +115,6 @@ const EmptyState = styled.div`
   font-size: 18px;
 `;
 
-
-const ProductColor = styled.div<{ color: string }>`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: ${(props) => props.color};
-`;
-
 const ProductSize = styled.span``;
 
 const RemoveButton = styled.button`

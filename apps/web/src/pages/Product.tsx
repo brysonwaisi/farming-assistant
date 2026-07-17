@@ -91,15 +91,6 @@ const FilterTitle = styled.span`
   font-weight: 200;
 `;
 
-const FilterColor = styled.div<{ color: string }>`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: ${(props) => props.color};
-  margin: 0px 5px;
-  cursor: pointer;
-`;
-
 const FilterType = styled.select`
   margin-left: 10px;
   padding: 5px;

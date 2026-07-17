@@ -80,7 +80,7 @@ const StyledLink = styled(Link)`
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>("");
-  const { isFetching, error, passwordFlowSuccess } = useSelector(
+  const { isFetching, passwordFlowSuccess } = useSelector(
     (state: RootState) => state.user
   );
   const dispatch = useDispatch<AppDispatch>();

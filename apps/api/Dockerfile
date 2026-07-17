@@ -41,6 +41,9 @@ COPY --from=build /repo/package*.json ./
 COPY --from=build /repo/node_modules ./node_modules
 COPY --from=build --chown=app:app /repo/apps/api/dist ./apps/api/dist
 COPY --from=build --chown=app:app /repo/apps/api/package.json ./apps/api/package.json
+# logger.ts creates <cwd>/log at startup; the implicit parent dirs from COPY are
+# root-owned, so pre-create it owned by the runtime user
+RUN mkdir -p apps/api/log && chown app:app apps/api apps/api/log
 USER app
 EXPOSE 5000
 WORKDIR /repo/apps/api
