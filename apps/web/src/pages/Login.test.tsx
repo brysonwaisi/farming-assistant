@@ -26,10 +26,10 @@ describe("Login page", () => {
     renderWithProviders(<Login />, { route: "/login" });
 
     await userEvent.type(screen.getByLabelText("Username"), "bryson");
-    await userEvent.type(screen.getByLabelText("Password"), "pw123456");
+    await userEvent.type(screen.getByLabelText("Password"), "test-password-1");
     await userEvent.click(screen.getByRole("button", { name: /login/i }));
 
-    expect(login).toHaveBeenCalledWith({ username: "bryson", password: "pw123456" });
+    expect(login).toHaveBeenCalledWith({ username: "bryson", password: "test-password-1" });
   });
 
   it("shows an error message and disables the button while fetching", () => {

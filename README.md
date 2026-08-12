@@ -2,7 +2,7 @@
 <p align="center">An eCommerce site for both farmers and consumers.</p>
 
 <p align="center">
- <img src="https://github.com/brysonwaisi/farming-assistant/blob/master/frontend/src/assets/hometxt.png" />
+ <img src="apps/web/src/assets/hometxt.png" />
 </p>
 
 This repository contains a frontend eCommerce platform using React.js and an API interface using Node.js and MongoDB to store data.
@@ -25,11 +25,11 @@ To fire up the application once all the project dependencies have been successfu
 #### Functionalities
 
 - Display a slider to the site
-  <img src='https://github.com/brysonwaisi/farming-assistant/blob/master/frontend/src/assets/home.png' />
+  <img src="apps/web/src/assets/home.png" />
 - Choose a product based on the category
-  <img src="https://github.com/brysonwaisi/farming-assistant/blob/master/frontend/src/assets/categories.png" />
+  <img src="apps/web/src/assets/categories.png" />
 - Footer
-  <img src="https://github.com/brysonwaisi/farming-assistant/blob/master/frontend/src/assets/foo.png" />
+  <img src="apps/web/src/assets/foo.png" />
 
 ### Environment
 

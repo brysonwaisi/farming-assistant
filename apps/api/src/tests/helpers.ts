@@ -14,7 +14,7 @@ interface UserOverrides {
 const createUser = async (
   overrides: UserOverrides = {},
 ): Promise<{ user: IUser; password: string }> => {
-  const password = overrides.password || 'Passw0rd!';
+  const password = overrides.password || 'test-password-1';
   const user = await User.create({
     username: overrides.username || 'tester',
     email: overrides.email || 'tester@example.com',

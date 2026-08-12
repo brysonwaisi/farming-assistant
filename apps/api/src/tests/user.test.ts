@@ -6,15 +6,15 @@ import { authedAgent, createUser } from './helpers';
 describe('User self-management', () => {
   it('changes the password (hashed) and allows login with the new one', async () => {
     const { agent, user } = await authedAgent();
-    const res = await agent.put(`/api/users/${user._id}`).send({ password: 'NewPassw0rd!' });
+    const res = await agent.put(`/api/users/${user._id}`).send({ password: 'new-test-password-1' });
     expect(res.status).toBe(200);
 
     const stored = await User.findById(user._id).select('+password');
-    expect(stored!.password).not.toBe('NewPassw0rd!');
+    expect(stored!.password).not.toBe('new-test-password-1');
 
     const login = await request(app)
       .post('/api/auth/login')
-      .send({ username: user.username, password: 'NewPassw0rd!' });
+      .send({ username: user.username, password: 'new-test-password-1' });
     expect(login.status).toBe(200);
   });
 

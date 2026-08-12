@@ -29,8 +29,8 @@ describe("Register page", () => {
     await userEvent.type(screen.getByPlaceholderText("last name"), "Son");
     await userEvent.type(screen.getByPlaceholderText("username"), "bryson");
     await userEvent.type(screen.getByPlaceholderText("email"), "b@x.com");
-    await userEvent.type(screen.getByPlaceholderText("password"), "Passw0rd!");
-    await userEvent.type(screen.getByPlaceholderText("confirm password"), "Passw0rd!");
+    await userEvent.type(screen.getByPlaceholderText("password"), "test-password-1");
+    await userEvent.type(screen.getByPlaceholderText("confirm password"), "test-password-1");
     await userEvent.click(screen.getByRole("button", { name: /create/i }));
 
     expect(signup).toHaveBeenCalledWith({
@@ -38,8 +38,8 @@ describe("Register page", () => {
       lastName: "Son",
       username: "bryson",
       email: "b@x.com",
-      password: "Passw0rd!",
-      confirmPassword: "Passw0rd!",
+      password: "test-password-1",
+      confirmPassword: "test-password-1",
     });
     expect((signup as unknown as Mock).mock.calls).toHaveLength(1);
     expect(screen.getByTestId("path").textContent).toBe("/login");
