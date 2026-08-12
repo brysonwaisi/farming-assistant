@@ -9,10 +9,12 @@ process.env.NODE_ENV = 'test';
 
 let mongo: MongoMemoryServer | undefined;
 
+// Generous timeout: the first run on a cold machine (fresh CI runner) downloads
+// the mongod binary (~120MB) inside this hook.
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   await mongoose.connect(mongo.getUri());
-});
+}, 120_000);
 
 // Wipe every collection between tests so cases are independent.
 afterEach(async () => {
