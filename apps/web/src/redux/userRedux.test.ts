@@ -5,6 +5,10 @@ import reducer, {
   loginFailure,
   signupSuccess,
   forgotpasswordSuccess,
+  resetpasswordStart,
+  resetpasswordSuccess,
+  resetpasswordFailure,
+  updateUser,
   logout,
 } from "./userRedux";
 import type { User, UserState } from "./userRedux";
@@ -49,6 +53,33 @@ describe("userRedux", () => {
     const state = reducer(initial, forgot({ success: true, message: "sent" }));
     expect(state.currentUser).toBeNull();
     expect(state.passwordFlowSuccess).toBe(true);
+  });
+
+  it("reset-password start clears prior success, success sets it, failure flags error", () => {
+    let state = reducer({ ...initial, passwordFlowSuccess: true }, resetpasswordStart());
+    expect(state.passwordFlowSuccess).toBe(false);
+    expect(state.isFetching).toBe(true);
+
+    state = reducer(state, resetpasswordSuccess());
+    expect(state.passwordFlowSuccess).toBe(true);
+    expect(state.isFetching).toBe(false);
+
+    const failed = reducer(initial, resetpasswordFailure());
+    expect(failed.error).toBe(true);
+    expect(failed.passwordFlowSuccess).toBe(false);
+  });
+
+  it("updateUser merges fields into the current user and no-ops when logged out", () => {
+    const loggedIn: UserState = {
+      ...initial,
+      currentUser: { _id: "1", username: "old", email: "e@x.com" } as User,
+      isLoggedIn: true,
+    };
+    const merged = reducer(loggedIn, updateUser({ username: "new" }));
+    expect(merged.currentUser).toMatchObject({ _id: "1", username: "new", email: "e@x.com" });
+
+    const loggedOut = reducer(initial, updateUser({ username: "ghost" }));
+    expect(loggedOut.currentUser).toBeNull();
   });
 
   it("logout resets the whole session", () => {

@@ -94,6 +94,36 @@ describe('Wishlist', () => {
     expect(stored?.products).toHaveLength(0);
   });
 
+  it('reads the own wishlist', async () => {
+    const { agent, user } = await authedAgent();
+    const product = await makeProduct();
+    await agent.post(`/api/wishlist/${product._id}`);
+
+    const res = await agent.get(`/api/wishlist/find/${user._id}`);
+    expect(res.status).toBe(200);
+    expect(res.body.products).toHaveLength(1);
+    expect(String(res.body.products[0].productId)).toBe(String(product._id));
+  });
+
+  it('replaces the wishlist, normalizing raw ids and {productId} shapes', async () => {
+    const { agent, user } = await authedAgent();
+    const p1 = await makeProduct();
+    const p2 = await Product.create({
+      title: 'Kale', desc: 'd', img: '/k.jpg', categories: ['veggies'], price: 50,
+    });
+
+    const replaced = await agent
+      .put(`/api/wishlist/find/${user._id}`)
+      .send({ products: [{ productId: p1._id }, p2._id] });
+    expect(replaced.status).toBe(200);
+    const ids = replaced.body.products.map((p: { productId: string }) => String(p.productId));
+    expect(ids).toEqual([String(p1._id), String(p2._id)]);
+
+    const emptied = await agent.put(`/api/wishlist/find/${user._id}`).send({ products: [] });
+    expect(emptied.status).toBe(200);
+    expect(emptied.body.products).toHaveLength(0);
+  });
+
   it('blocks reading another user wishlist (403)', async () => {
     const { agent } = await authedAgent({ username: 'u1', email: 'u1@x.com' });
     const { user: other } = await createUser({ username: 'u2', email: 'u2@x.com' });

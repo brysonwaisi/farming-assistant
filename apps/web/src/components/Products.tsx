@@ -27,6 +27,8 @@ const LoadMoreRow = styled.div`
 
 type SortOrder = "newest" | "asc" | "desc";
 
+const EMPTY_FILTER: Partial<Record<string, unknown>> = {};
+
 interface ProductsProps {
   products?: ProductItem[];
   loading?: boolean;
@@ -37,7 +39,7 @@ interface ProductsProps {
 const Products = ({
   products: productsProp,
   loading: loadingProp,
-  filter = {},
+  filter = EMPTY_FILTER,
   sort = "newest",
 }: ProductsProps) => {
   // Two modes: controlled (ProductList passes products) or self-fetching (Home).

@@ -77,6 +77,21 @@ describe("cartRedux", () => {
     expect((state.products[0] as CartProduct).quantity).toBe(1);
   });
 
+  it("defaults quantity to 1 and missing type to empty string", () => {
+    const state = reducer(initial, addProduct({ _id: "p9", price: 40 }));
+    expect((state.products[0] as CartProduct).quantity).toBe(1);
+    expect((state.products[0] as CartProduct).type).toBe("");
+    expect(state.total).toBe(40);
+  });
+
+  it("setCart with no payload resets to an empty cart", () => {
+    let state = reducer(initial, addProduct(prod({ quantity: 2 })));
+    state = reducer(state, setCart(undefined));
+    expect(state.products).toHaveLength(0);
+    expect(state.quantity).toBe(0);
+    expect(state.total).toBe(0);
+  });
+
   it("clearCart empties the cart", () => {
     let state = reducer(initial, addProduct(prod({ quantity: 3 })));
     state = reducer(state, clearCart());
