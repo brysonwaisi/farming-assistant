@@ -1,22 +1,27 @@
 module.exports = {
+  root: true,
   env: {
-    browser: true,
-    commonjs: true,
-    es2021: true,
+    es2022: true,
     node: true,
   },
-  extends: ['airbnb-base'],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 12,
+    ecmaVersion: 2022,
+    sourceType: 'module',
   },
+  plugins: ['@typescript-eslint'],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  ignorePatterns: ['dist/', 'node_modules/', 'coverage/'],
   rules: {
-    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
-    'no-underscore-dangle': 'off',
     camelcase: 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+    ],
   },
   overrides: [
     {
-      files: ['tests/**/*.js', '**/*.test.js'],
+      files: ['src/tests/**/*.ts', '**/*.test.ts'],
       env: { jest: true },
       rules: {
         'no-restricted-syntax': 'off',
